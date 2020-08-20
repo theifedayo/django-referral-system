@@ -8,6 +8,7 @@ urlpatterns = [
 ]
 
 
+
 if settings.DEBUG:#for development mode
     import debug_toolbar
     urlpatterns += [path('__debug__/', include(debug_toolbar.urls))]
