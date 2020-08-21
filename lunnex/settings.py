@@ -26,8 +26,7 @@ SECRET_KEY = '8%-^41c50727@s3m(dhnf_1_x%-oj9&rzhmbtqb2mc5nm^o78y'
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
-
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # Application definition
 
 INSTALLED_APPS = [
@@ -37,6 +36,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'crispy_forms',
+    'django_countries',
 
     'core'
 ]
@@ -135,3 +142,7 @@ LOGIN_REDIRECT_URL = '/'
 # CRISPY FORMS
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+ACCOUNT_FORMS = { 
+'signup': 'core.forms.CustomSignupForm', 
+} 
