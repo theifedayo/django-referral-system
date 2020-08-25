@@ -1,10 +1,12 @@
 import random
 import string
+from django_reflinks.models import ReferralLink, ReferralHit
 
 
 # from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 # from .forms import UserCreationForm, SignUpForm
 
+from django.contrib.auth.models import User
 import stripe
 from django.conf import settings
 from django.contrib import messages
@@ -15,13 +17,18 @@ from django.shortcuts import redirect
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.views.generic import ListView, DetailView, View
+from django.db.models import Q
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, get_object_or_404
 
-from .forms import CheckoutForm, CouponForm, RefundForm, PaymentForm
-from .models import Item, OrderItem, Order, Address, Payment, Coupon, Refund, UserProfile
+from .forms import CheckoutForm, CouponForm, RefundForm, PaymentForm, ProfileForm, ReferralForm
+from .models import Item, OrderItem, Order, Address, Payment, Coupon, Refund, UserProfile, Profile, Referral
 
-# stripe.api_key = settings.STRIPE_SECRET_KEY
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
-
+# stripe.api_key = "sk_test_4eC39HqLyjWDarjtT1zdp7dc"
 
 
 def create_ref_code():
@@ -212,43 +219,55 @@ class CheckoutView(View):
             return redirect("core:order-summary")
 
 
-class PaymentView(View):
+def paystack(request):
+    items = Item.objects.all()
+    order = Order.objects.get(user=request.user, ordered=False)
+    context = {'items': items, 'order': order}
+    template_name = 'core/paystack.html'
+    return render(request, template_name, context)
+
+
+
+class PaymentView(LoginRequiredMixin, View):
     def get(self, *args, **kwargs):
-        order = Order.objects.get(user=self.request.user, ordered=False)
-        if order.billing_address:
-            context = {
-                'order': order,
-                'DISPLAY_COUPON_FORM': False,
-                'STRIPE_PUBLIC_KEY' : settings.STRIPE_PUBLIC_KEY
-            }
-            userprofile = self.request.user.userprofile
-            if userprofile.one_click_purchasing:
-                # fetch the users card list
-                cards = stripe.Customer.list_sources(
-                    userprofile.stripe_customer_id,
-                    limit=3,
-                    object='card'
-                )
-                card_list = cards['data']
-                if len(card_list) > 0:
-                    # update the context with the default card
-                    context.update({
-                        'card': card_list[0]
-                    })
-            return render(self.request, "payment.html", context)
-        else:
-            messages.warning(
-                self.request, "You have not added a billing address")
-            return redirect("core:checkout")
+        # order = Order.objects.get(user=self.request.user, ordered=False)
+        # if order.billing_address:
+        #     context = {
+        #         'order': order,
+        #         'DISPLAY_COUPON_FORM': False,
+        #         'STRIPE_PUBLIC_KEY' : settings.STRIPE_SECRET_KEY
+        #     }
+        #     userprofile = self.request.user.userprofile
+        #     if userprofile.one_click_purchasing:
+        #         # fetch the users card list
+        #         cards = stripe.Customer.list_sources(
+        #             userprofile.stripe_customer_id,
+        #             limit=3,
+        #             object='card'
+        #         )
+        #         card_list = cards['data']
+        #         if len(card_list) > 0:
+        #             # update the context with the default card
+        #             context.update({
+        #                 'card': card_list[0]
+        #             })
+        return render(self.request, "core/payment.html")
+        # else:
+        #     messages.warning(
+        #         self.request, "You have not added a billing address")
+        #     return redirect("core:checkout")
 
     def post(self, *args, **kwargs):
         order = Order.objects.get(user=self.request.user, ordered=False)
         form = PaymentForm(self.request.POST)
+
         userprofile = UserProfile.objects.get(user=self.request.user)
         if form.is_valid():
             token = form.cleaned_data.get('stripeToken')
+            # token = request.GET['stripeToken']
             save = form.cleaned_data.get('save')
             use_default = form.cleaned_data.get('use_default')
+            print(token,'##################################################')
 
             if save:
                 if userprofile.stripe_customer_id != '' and userprofile.stripe_customer_id is not None:
@@ -351,10 +370,123 @@ class PaymentView(View):
         return redirect("/payment/stripe/")
 
 
-class HomeView(ListView):
-    model = Item
-    paginate_by = 10
-    template_name = "core/home.html"
+
+
+# class HomeView(ListView):
+#     model = Item
+#     paginate_by = 10
+#     template_name = "core/home.html"
+
+def get_referral(request, referral_link):
+    try:
+        referral = Referral.objects.get(referral_link=referral_link)
+        return referral
+    except ObjectDoesNotExist:
+        messages.info(request, "This referral_link does not exist")
+        return redirect("/accounts/signup")
+
+
+def signup(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+
+        if form.is_valid():
+
+            form.save()
+            messages.success(request, 'Your Account was created successfully!')
+            return redirect('/accounts/login')
+
+    else:
+        form = UserCreationForm()
+    return render(request, 'core/signup.html', {'form':form}) 
+
+def logout_request(request):
+    logout(request)
+    messages.info(request, "Logged out successfully!")
+    return redirect("main:homepage")
+ 
+
+
+def sellers_signup(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        profile_form = ProfileForm(request.POST)
+        ref_form = ReferralForm(request.POST or None)
+        if form.is_valid() and profile_form.is_valid():
+
+            # form.save()
+            user = form.save()
+            user.profile.store_name = profile_form.cleaned_data.get('store_name')
+            # user.profile.location = profile_form.cleaned_data.get('location')
+            user.profile.save() 
+            # profile_form.save()
+            try:
+                user.referral.referral_link = ref_form.cleaned_data['referral_link']
+                order = Referral.objects.get(
+                         user=self.request.user)
+                order.coupon = get_referral(self.request, referral_link)
+                order.save()
+                user.referral.save()
+                return redirect("core:checkout")
+            except ObjectDoesNotExist:
+                messages.info(self.request, "You do not have an active order")
+                return redirect("core:checkout")
+            messages.success(request, 'Your Account was created successfully!')
+            return redirect('/login')
+
+    else:
+        form = UserCreationForm()
+        profile_form = ProfileForm()
+        ref_form = ReferralForm()
+    return render(request, 'core/sellers-signup.html', {'form':form, 'profile_form': profile_form,'ref_form': ref_form}) 
+
+
+@login_required
+def dashboard(request):
+    prof = Profile.objects.all()
+    ref = Referral.objects.all()
+    items = Item.objects.filter(user=request.user).order_by('-timestamp')
+    ref_link = ReferralLink.objects.get(user=request.user)#get(identifier=user.identifier)
+    ref_hit = ReferralHit.objects.all()
+    template_name ='core/dashboard.html'
+    context = {'prof': prof, 'ref_link': ref_link ,'ref_hit':ref_hit,'items': items}
+    return render(request, template_name, context)
+
+class ProfileDetailView(DetailView):
+    queryset = User.objects.filter(is_active=True)
+        
+    template_name = 'core/dashboard.html'
+    model = Profile
+
+    def get_object(self):
+        username = self.kwargs.get("username")
+        return get_object_or_404(User, username__iexact=username, is_active=True)
+
+
+def search_lunnex(request):
+    template_name = 'core/index.html'
+    items = Item.objects.all()
+    page = request.GET.get('page', 1)
+    paginator = Paginator(items, 15)
+    try:
+        users = paginator.page(page)
+    except PageNotAnInteger:
+        users = paginator.page(1)
+    except EmptyPage:
+        users = paginator.page(paginator.num_pages)
+
+    context = {'items': items, 'users': users}
+    return render(request, template_name, context)
+
+def results(request):
+    template_name = 'core/users.html'
+    query = request.GET.get('q')
+    result = Item.objects.filter(Q(category__icontains=query) | Q(title__icontains=query))
+    context = {
+        "result":result,
+    }
+    return render(request, template_name, context)
+
 
 
 class OrderSummaryView(LoginRequiredMixin, View):
@@ -471,6 +603,9 @@ def get_coupon(request, code):
     except ObjectDoesNotExist:
         messages.info(request, "This coupon does not exist")
         return redirect("core:checkout")
+
+
+
 
 
 class AddCouponView(View):
