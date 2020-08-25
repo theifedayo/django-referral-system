@@ -4,43 +4,28 @@ from django_countries.widgets import CountrySelectWidget
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 from allauth.account.forms import SignupForm 
+from .models import Profile, Referral
 
 
 
 PAYMENT_CHOICES = (
     ('S', 'Stripe'),
-    ('P', 'PayPal')
+    ('P', 'PayPal'),
+    ('PS', 'PayStack')
 )
 
-# class SignUpForm(UserCreationForm):
-#     email = forms.CharField(max_length=254, help_text='Required. Inform a valid email address.')
-#     referral_link = forms.CharField(max_length = 30)
-    
 
 
-#     class Meta:
-#         model = User
-#         fields = ('username','referral_link','email','password1', 'password2', )
-    
-
-#     def signup(self, request, user): 
-#          user.referral_link = self.cleaned_data['referral_link'] 
-#          user.save() 
-#          return user 
-
-  
-class CustomSignupForm(SignupForm): 
-    # first_name = forms.CharField(max_length=30, label='First Name') 
-    # last_name = forms.CharField(max_length=30, label='Last Name')
-    referral_link = forms.CharField(max_length=30, label='Referral link')
+class ReferralForm(forms.ModelForm):
+    class Meta:
+        model = Referral
+        fields = ['referral_link']
 
 
-    def signup(self, request, user): 
-         # user.first_name = self.cleaned_data['first_name'] 
-         # user.last_name = self.cleaned_data['last_name'] 
-         user.referral_link = self.cleaned_data['referral_link'] 
-         user.save() 
-         return user 
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['store_name']
 
 class CheckoutForm(forms.Form):
     shipping_address = forms.CharField(required=False)
