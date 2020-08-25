@@ -1,15 +1,23 @@
 from django.db.models.signals import post_save
 from django.conf import settings
 from django.db import models
+from django.contrib.auth.models import User
 from django.db.models import Sum
 from django.shortcuts import reverse
 from django_countries.fields import CountryField
+from django.dispatch import receiver
 
 
 CATEGORY_CHOICES = (
     ('Cl', 'Clothing'),
     ('Co', 'Computing'),
     ('E','Electronics'),
+    ('PT','Phones & Tablets'),
+    ('G','Gaming'),
+    ('A','Automobile'),
+    ('F','Fashion'),
+    ('Sp','Sport'),
+    # (),
     # (),
     # (),
     # (),
@@ -26,6 +34,21 @@ ADDRESS_CHOICES = (
     ('S', 'Shipping'),
 )
 
+class Profile(models.Model):
+    # user = models.OneToOneField(
+    #     settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    store_name = models.CharField(max_length=30, blank=True)
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+
+# @receiver(post_save, sender=User)
+# def save_user_profile(sender, instance, **kwargs):
+#     instance.profile.save()
+
 
 class UserProfile(models.Model):
     user = models.OneToOneField(
@@ -38,15 +61,18 @@ class UserProfile(models.Model):
 
 
 class Item(models.Model):
+    user = models.ForeignKey(User, default=1, null=True, on_delete=models.SET_NULL)
     title = models.CharField(max_length=100)
     price = models.FloatField()
     discount_price = models.FloatField(blank=True, null=True)
+    paystack_link = models.CharField(max_length=80, blank=True, null=True)
     category = models.CharField(choices=CATEGORY_CHOICES, max_length=2)
     label = models.CharField(choices=LABEL_CHOICES, max_length=1)
     slug = models.SlugField()
     description = models.TextField()
     image = models.ImageField()
     favorite = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
@@ -162,6 +188,14 @@ class Coupon(models.Model):
     def __str__(self):
         return self.code
 
+class Referral(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.SET_NULL, blank=True, null=True)
+    referral_link = models.CharField(max_length=40)
+    amount = models.FloatField(default='1500')
+
+    def __str__(self):
+        return self.referral_link
 
 class Refund(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
@@ -179,3 +213,5 @@ def userprofile_receiver(sender, instance, created, *args, **kwargs):
 
 
 post_save.connect(userprofile_receiver, sender=settings.AUTH_USER_MODEL)
+
+
