@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/2.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
-
+import stripe
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -22,6 +22,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '8%-^41c50727@s3m(dhnf_1_x%-oj9&rzhmbtqb2mc5nm^o78y'
 
+
+STRIPE_SECRET_KEY = "sk_test_1Da9S8O4zTzQ5XrtkiJx9qFu"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -44,6 +46,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'crispy_forms',
     'django_countries',
+    'django_reflinks',
+
 
     'core'
 ]
@@ -56,6 +60,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'django_reflinks.middleware.AnonymousReferralMiddleware',
+    'django_reflinks.middleware.ReferralLinkMiddleware'
 ]
 
 ROOT_URLCONF = 'lunnex.urls'
@@ -138,7 +145,7 @@ AUTHENTICATION_BACKENDS = (
 )
 SITE_ID = 1
 LOGIN_REDIRECT_URL = '/'
-
+LOGIN_URL = '/login/'
 # CRISPY FORMS
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
