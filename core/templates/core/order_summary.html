@@ -20,10 +20,11 @@
             <td>{{ order_item.item.title }}</td>
             <td>{{ order_item.item.price }}</td>
             <td>
-                <a href="{% url 'core:remove-single-item-from-cart' order_item.item.slug %}"><i class="fas fa-minus mr-2"></i></a>
+                <a href="{% url 'core:remove-single-item-from-cart' order_item.item.slug %}">subtract<i class="fas fa-minus mr-2"></i></a>
                 {{ order_item.quantity }}
                 <a href="{% url 'core:add-to-cart' order_item.item.slug %}">add<i class="fas fa-plus ml-2"></i></a>
             </td>
+             <!-- <td>{{ order_item.item.favorite }}</td> -->
             <td>
             {% if order_item.item.discount_price %}
                 ${{ order_item.get_total_discount_item_price }}
@@ -31,7 +32,7 @@
             {% else %}
                 ${{ order_item.get_total_item_price }}
             {% endif %}
-            <a style='color: red;' href="{% url 'core:remove-from-cart' order_item.item.slug %}">subtract
+            <a style='color: red;' href="{% url 'core:remove-from-cart' order_item.item.slug %}">delete
                 <i class="fas fa-trash float-right"></i>
             </a>
             </td>

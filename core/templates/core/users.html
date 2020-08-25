@@ -1,0 +1,31 @@
+<div class='container'>
+<div class="card">
+    <div class="card-body">
+          
+         <div class="container">
+      <form class="form-inline" method='GET' action="{% url 'core:results' %}">
+      <div class="form-group mx-sm-34 mb-1">
+        <label for="text" class="sr-only">Search icon</label>
+        <input type="text" class="form-control" name='q' id="content" value="{{ request.GET.q }}" placeholder="Search Newco">
+      </div>
+      <button type="submit" class="btn mb-1">Search</button>
+    </form>
+  </div>
+</div>
+<hr>  
+  {% for obj in result %}
+      
+        
+            <div class="media">
+              
+              <div class="media-body">
+                <p class='mr-2'><b><a href='/product/{{ obj.slug }}/'>{{obj.title}}</a></b>
+                <p><p class='article-content'>{{ obj.description }} | {{ obj.price }}</p>
+                
+                
+          </div>
+        </div>
+         
+  </div>  
+       
+  {% endfor %} 
