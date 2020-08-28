@@ -4,7 +4,7 @@ from django_countries.widgets import CountrySelectWidget
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 from allauth.account.forms import SignupForm 
-from .models import Profile, Referral
+from .models import Profile, Referral, Item
 
 
 
@@ -14,7 +14,11 @@ PAYMENT_CHOICES = (
     ('PS', 'PayStack')
 )
 
-
+class ItemForm(forms.ModelForm):
+    class Meta:
+        model = Item
+        fields = ['title','price','discount_price','paystack_link',
+            'category','label','slug','description','image']
 
 class ReferralForm(forms.ModelForm):
     class Meta:
