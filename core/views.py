@@ -23,7 +23,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 
-from .forms import CheckoutForm, CouponForm, RefundForm, PaymentForm, ProfileForm, ReferralForm
+from .forms import CheckoutForm, CouponForm, RefundForm, PaymentForm, ProfileForm, ReferralForm, ItemForm
 from .models import Item, OrderItem, Order, Address, Payment, Coupon, Refund, UserProfile, Profile, Referral
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -461,6 +461,20 @@ class ProfileDetailView(DetailView):
     def get_object(self):
         username = self.kwargs.get("username")
         return get_object_or_404(User, username__iexact=username, is_active=True)
+
+@login_required
+def item_create_view(request):
+    form = ItemForm(request.POST or None, request.FILES or None)
+    if form.is_valid():
+        obj = form.save(commit=False)
+        obj.user = request.user
+        obj.save()
+        return redirect('/')
+        form = ItemForm()
+    template_name = 'core/item-form.html'
+    context = {'form': form}
+    return render(request, template_name, context) 
+
 
 
 def search_lunnex(request):

@@ -12,7 +12,7 @@
         </div>
         <span class="text-muted">${{ order_item.get_final_price }}</span>
         {% if order_item.item.paystack_link %}
-            <button><a href="{{ order_item.item.paystack_link }}">PAy now</a></button>
+            <button><a href="{{ order_item.item.paystack_link }}" target="_blank">PAy now</a></button>
         {% endif %}
             <p>Can't use paysatck</p>
     </li>

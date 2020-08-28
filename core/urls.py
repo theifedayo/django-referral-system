@@ -29,6 +29,7 @@ urlpatterns = [
          name='remove-single-item-from-cart'),
     path('sellers/', views.sellers_signup, name='sellers-signup'),
     path('dashboard/', views.dashboard, name='dashboard'),
+    path('dashboard/create-prod', views.item_create_view, name='item-create-view'),
     path('', views.search_lunnex, name='search-lunnex'),
     path('search/', views.results, name='results'),
     path('signup/', views.signup, name='signup'),
