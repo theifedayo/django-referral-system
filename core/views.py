@@ -1,7 +1,10 @@
 import random
 import string
 from django_reflinks.models import ReferralLink, ReferralHit
-
+from decimal import Decimal
+from django.urls import reverse
+from paypal.standard.forms import PayPalPaymentsForm
+from django.views.decorators.csrf import csrf_exempt
 
 # from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 # from .forms import UserCreationForm, SignUpForm
@@ -204,19 +207,56 @@ class CheckoutView(View):
                         messages.info(
                             self.request, "Please fill in the required billing address fields")
 
-                payment_option = form.cleaned_data.get('payment_option')
+                # payment_option = form.cleaned_data.get('payment_option')
 
-                if payment_option == 'S':
-                    return redirect('core:payment', payment_option='stripe')
-                elif payment_option == 'P':
-                    return redirect('core:payment', payment_option='paypal')
-                else:
-                    messages.warning(
-                        self.request, "Invalid payment option selected")
-                    return redirect('core:checkout')
+                # if payment_option == 'S':
+                #     return redirect('core:payment', payment_option='stripe')
+                # elif payment_option == 'P':
+                #     return redirect('core:payment', payment_option='paypal')
+                # else:
+                #     messages.warning(
+                #         self.request, "Invalid payment option selected")
+                return redirect('/payment-options')
         except ObjectDoesNotExist:
             messages.warning(self.request, "You do not have an active order")
             return redirect("core:order-summary")
+
+
+def payment_option(request):
+    context = {}
+    template_name = 'core/payment_option.html'
+    return render(request, template_name, context)
+
+
+
+@csrf_exempt
+def payment_done(request):
+    return render(request, 'core/done.html')
+
+@csrf_exempt
+def payment_canceled(request):
+    return render(request, 'core/canceled.html')
+
+def payment_process(request):
+    items = Item.objects.all()
+    order = Order.objects.get(user=request.user, ordered=False)
+    host = request.get_host()
+
+    paypal_dict = {
+        'business': settings.PAYPAL_RECEIVER_EMAIL,
+        'amount': '%.2f' % order.get_total(),#.quantize(Decimal('.01')),
+        'item_name': 'Order {}'.format(order.id),
+        'invoice': str(order.id),
+        'currency_code': 'USD',
+        'notify_url': 'http://{}{}'.format(host, reverse('paypal-ipn')),
+        'return_url': 'http://{}{}'.format(host, reverse('core:done')),
+        'cancel_return': 'http://{}{}'.format(host, reverse('core:canceled')),
+    }
+
+    form = PayPalPaymentsForm(initial=paypal_dict)
+    return render(request, 'core/process.html', {'order': order, 'form':form})
+
+
 
 
 def paystack(request):
