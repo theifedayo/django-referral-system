@@ -17,7 +17,7 @@
               <div class='hideable_shipping_form'>
 
                 <div class="md-form mb-5">
-                  <input type='text' placeholder='1234 Main St' id='shipping_address' name='shipping_address' class='form-control' />
+                  <input type='text' placeholder='1234 Main St' id='shipping_address' name='shipping_address' class='form-control' required/>
                   <label for="shipping_address" class="">Address</label>
                 </div>
 
@@ -36,7 +36,7 @@
                   </div>
                   <div class="col-lg-4 col-md-6 mb-4">
                     <label for="shipping_zip">Zip</label>
-                    <input type='text' placeholder='Zip code' id='shipping_zip' name='shipping_zip' class='form-control' />
+                    <input type='text' placeholder='Zip code' id='shipping_zip' name='shipping_zip' class='form-control' required/>
                     <div class="invalid-feedback">
                       Zip code required.
                     </div>
@@ -48,7 +48,7 @@
                   <label class="custom-control-label" for="same_billing_address">Billing address is the same as my shipping address</label>
                 </div>
                 <div class="custom-control custom-checkbox">
-                  <input type="checkbox" class="custom-control-input" name="set_default_shipping" id="set_default_shipping">
+                  <input type="checkbox" class="custom-control-input" name="set_default_shipping" id="set_default_shipping" required>
                   <label class="custom-control-label" for="set_default_shipping">Save as default shipping address</label>
                 </div>
 
@@ -67,7 +67,7 @@
 
               <div class='hideable_billing_form'>
                 <div class="md-form mb-5">
-                  <input type='text' placeholder='1234 Main St' id='billing_address' name='billing_address' class='form-control' />
+                  <input type='text' placeholder='1234 Main St' id='billing_address' name='billing_address' class='form-control' required/>
                   <label for="billing_address" class="">Address</label>
                 </div>
 
@@ -87,7 +87,7 @@
 
                   <div class="col-lg-4 col-md-6 mb-4">
                     <label for="billing_zip">Zip</label>
-                    <input type='text' placeholder='Zip code' id='billing_zip' name='billing_zip' class='form-control' />
+                    <input type='text' placeholder='Zip code' id='billing_zip' name='billing_zip' class='form-control' required/>
                     <div class="invalid-feedback">
                       Zip code required.
                     </div>
@@ -110,7 +110,7 @@
               {% endif %}
               <hr>
 
-              <h3>Payment option</h3>
+              <!-- <h3>Payment option</h3> -->
 
               <div class="d-block my-3">
                 {% for value, name in form.fields.payment_option.choices %}
