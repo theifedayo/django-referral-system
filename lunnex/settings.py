@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'django_countries',
     'django_reflinks',
+    'paypal.standard.ipn',
 
 
     'core'
@@ -128,6 +129,10 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+
+PAYPAL_RECEIVER_EMAIL = "adesiyanifedayo@gmail.com"
+PAYPAL_TEST = True
 
 
 # Static files (CSS, JavaScript, Images)

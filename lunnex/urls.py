@@ -7,6 +7,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
     path("ref/", include("django_reflinks.urls")),
+    path('paypal/', include('paypal.standard.ipn.urls')),
     path('', include('core.urls', namespace='core'))
 ]
 
