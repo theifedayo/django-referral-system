@@ -1,5 +1,6 @@
 from django import forms
 from django_countries.fields import CountryField
+from django.forms import widgets
 from django_countries.widgets import CountrySelectWidget
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
@@ -8,11 +9,11 @@ from .models import Profile, Referral, Item
 
 
 
-PAYMENT_CHOICES = (
-    ('S', 'Stripe'),
-    ('P', 'PayPal'),
-    ('PS', 'PayStack')
-)
+# PAYMENT_CHOICES = (
+#     ('S', 'Stripe'),
+#     ('P', 'PayPal'),
+#     ('PS', 'PayStack')
+# )
 
 class ItemForm(forms.ModelForm):
     class Meta:
@@ -56,8 +57,8 @@ class CheckoutForm(forms.Form):
     set_default_billing = forms.BooleanField(required=False)
     use_default_billing = forms.BooleanField(required=False)
 
-    payment_option = forms.ChoiceField(
-        widget=forms.RadioSelect, choices=PAYMENT_CHOICES)
+    # payment_option = forms.ChoiceField(
+    #     widget=forms.RadioSelect, choices=PAYMENT_CHOICES)
 
 
 class CouponForm(forms.Form):

@@ -34,7 +34,11 @@ urlpatterns = [
     path('search/', views.results, name='results'),
     path('signup/', views.signup, name='signup'),
     path('login/', LoginView.as_view(), name='login'),
+    path('payment-options/', views.payment_option, name='payment_option'),
     path('payment/stripe/', PaymentView.as_view(), name='payment'),
-    path('payment/paystack/', views.paystack, name='payment'),
+    path('payment/paystack/', views.paystack, name='payment-paystack'),
+    path('process/', views.payment_process, name="process"),
+    path('done/', views.payment_done, name="done"),
+    path('canceled', views.payment_canceled, name='canceled')
     # path('request-refund/', RequestRefundView.as_view(), name='request-refund')
 ]
