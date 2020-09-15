@@ -6,9 +6,13 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 from allauth.account.forms import SignupForm 
 from .models import Profile, Referral
+from django_reflinks.models import ReferralLink
 
 
-
+class ReferralLinkForm(forms.ModelForm):
+	class Meta:
+		model = ReferralLink
+		fields = ['identifier']
 
 class ReferralForm(forms.ModelForm):
     class Meta:
