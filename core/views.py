@@ -106,11 +106,17 @@ def sellers_signup(request):
 def dashboard(request):
     prof = Profile.objects.all()
     ref = Referral.objects.all()
-    items = Item.objects.filter(user=request.user).order_by('-timestamp')
-    ref_link = ReferralLink.objects.get(user=request.user)#get(identifier=user.identifier)
+    try:
+        ref_link = ReferralLink.objects.get(user=request.user)#get(identifier=user.identifier)
+        ref_hit = ReferralHit.objects.all()
+        template_name ='core/dashboard.html'
+        context = {'prof': prof, 'ref_link': ref_link ,'ref_hit':ref_hit}
+        return render(request, template_name, context)
+    except ObjectDoesNotExist:
+        pass
     ref_hit = ReferralHit.objects.all()
     template_name ='core/dashboard.html'
-    context = {'prof': prof, 'ref_link': ref_link ,'ref_hit':ref_hit,'items': items}
+    context = {'prof': prof ,'ref_hit':ref_hit}
     return render(request, template_name, context)
 
 class ProfileDetailView(DetailView):
