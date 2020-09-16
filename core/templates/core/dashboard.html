@@ -4,7 +4,9 @@
 {% else %}
 <p>Set your referral link <a href="ref-link">here</a></p>
 {% endif %}
-
-{{ref_hit }}
+{%for obj in ref_hit %}
+	{{ obj.hit_user }}
+{% endfor %}
+{{ length }}
 
 
