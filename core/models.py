@@ -34,15 +34,25 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.user.username
 
+class Wallet(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    signup_fee = models.FloatField(default='400')
+    referral_fee = models.FloatField(default='0')
+    facebook_share_fee = models.FloatField(default='0') 
 
-class Referral(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.SET_NULL, blank=True, null=True)
-    referral_link = models.CharField(max_length=40)
-    amount = models.FloatField(default='1500')
 
     def __str__(self):
-        return self.referral_link
+        return self.user.username
+        
+# class Referral(models.Model):
+#     user = models.ForeignKey(settings.AUTH_USER_MODEL,
+#                              on_delete=models.SET_NULL, blank=True, null=True)
+#     referral_link = models.CharField(max_length=40)
+#     amount = models.FloatField(default='1500')
+
+#     def __str__(self):
+#         return self.referral_link
 
 
 def userprofile_receiver(sender, instance, created, *args, **kwargs):

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Profile, Referral
+from .models import Profile, Wallet
 
 admin.site.register(Profile)
-admin.site.register(Referral)
+admin.site.register(Wallet)

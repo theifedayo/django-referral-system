@@ -1,12 +1,15 @@
-<h1>{{ user.profile.store_name }}</h1>
+<h1>{{ user.username }}</h1>
 {%if ref_link %}
-	<p>Your referal link is {{ ref_link }}</p>
+	<p>Your referal link is localhost:8000/signup/{{ ref_link }}</p>
 {% else %}
 <p>Set your referral link <a href="ref-link">here</a></p>
 {% endif %}
-{%for obj in ref_hit %}
-	{{ obj.hit_user }}
-{% endfor %}
-{{ length }}
+
+<h2>Wallet</h2>
+<p>Signup fee: <b>{{ signup_fee }}</b></p>
+<p>Number of people referred: <b>{{ length }}</b></p>
+<p>Referral fee: <b>{{ referral_fee }}</b></p>
+<p>Facebook-share fee: <b></b></p>
+<p>Total: <b>{{ total }}</b></p>
 
 

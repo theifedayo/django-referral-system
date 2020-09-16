@@ -25,8 +25,8 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 
-from .forms import ProfileForm, ReferralForm, ReferralLinkForm
-from .models import Profile, Referral
+from .forms import ProfileForm, ReferralLinkForm
+from .models import Profile, Wallet
 
 
 
@@ -113,25 +113,33 @@ def sellers_signup(request):
 @login_required
 def dashboard(request):
     prof = Profile.objects.all()
-    ref = Referral.objects.all()
     try:
         new_list = []
         ref_link = ReferralLink.objects.get(user=request.user)#get(identifier=user.identifier)
+        # wallet = Wallet.objects.get(user=request.user)
         print(ref_link)
+        signup_fee = 300
+        print(signup_fee)
         ref_hit = ReferralHit.objects.filter(Q(next__icontains='/signup/')&Q(authenticated=False)&Q(referral_link=ref_link))
         for a in ref_hit:
             new_list.append(a)
-            print(new_list)
+            
             try:
                 length =len(new_list)
-                print(a)
+                referral_fee = length * 1000
+                signup_fee = 300
+                total = signup_fee + referral_fee
                 template_name ='core/dashboard.html'
-                context = {'prof': prof, 'ref_link': ref_link ,'ref_hit':ref_hit,'length': length}
+                context = {'prof': prof, 'ref_link': ref_link ,'ref_hit':ref_hit,'length': length,
+                'referral_fee': referral_fee, 'signup_fee': signup_fee, 'total': total}
                 return render(request, template_name, context)
             except UnboundLocalError:
                 print(a)
         template_name ='core/dashboard.html'
-        context = {'prof': prof, 'ref_link': ref_link ,'ref_hit':ref_hit}
+        empty_list = []
+        length = len(empty_list)
+        total = 300
+        context = {'prof': prof, 'ref_link': ref_link ,'ref_hit':ref_hit,'signup_fee': signup_fee,'length':length,'total': total}
         return render(request, template_name, context)
     except ObjectDoesNotExist:
         pass
