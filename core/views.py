@@ -44,10 +44,7 @@ def ref_link_form(request):
     template_name = 'core/ref_link.html'
     context = {'form': form}
     return render(request, template_name, context)  
-# class HomeView(ListView):
-#     model = Item
-#     paginate_by = 10
-#     template_name = "core/home.html"
+
 
 def get_referral(request, referral_link):
     try:
@@ -118,10 +115,16 @@ def dashboard(request):
     prof = Profile.objects.all()
     ref = Referral.objects.all()
     try:
+        new_list = []
         ref_link = ReferralLink.objects.get(user=request.user)#get(identifier=user.identifier)
-        ref_hit = ReferralHit.objects.all()
+        ref_hit = ReferralHit.objects.filter(Q(next__icontains='/signup/')&Q(authenticated=False))
+        for a in ref_hit:
+            new_list.append(a)
+            print(new_list)
+            length =len(new_list)
+            print(a)
         template_name ='core/dashboard.html'
-        context = {'prof': prof, 'ref_link': ref_link ,'ref_hit':ref_hit}
+        context = {'prof': prof, 'ref_link': ref_link ,'ref_hit':ref_hit,'length': length}
         return render(request, template_name, context)
     except ObjectDoesNotExist:
         pass
