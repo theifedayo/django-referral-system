@@ -1,5 +1,4 @@
-from django.urls import path
-from .views import ProfileDetailView  
+from django.urls import path 
 from django.contrib.auth.views import LoginView
 from core import views
 
