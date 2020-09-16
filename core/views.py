@@ -117,14 +117,21 @@ def dashboard(request):
     try:
         new_list = []
         ref_link = ReferralLink.objects.get(user=request.user)#get(identifier=user.identifier)
-        ref_hit = ReferralHit.objects.filter(Q(next__icontains='/signup/')&Q(authenticated=False))
+        print(ref_link)
+        ref_hit = ReferralHit.objects.filter(Q(next__icontains='/signup/')&Q(authenticated=False)&Q(referral_link=ref_link))
         for a in ref_hit:
             new_list.append(a)
             print(new_list)
-            length =len(new_list)
-            print(a)
+            try:
+                length =len(new_list)
+                print(a)
+                template_name ='core/dashboard.html'
+                context = {'prof': prof, 'ref_link': ref_link ,'ref_hit':ref_hit,'length': length}
+                return render(request, template_name, context)
+            except UnboundLocalError:
+                print(a)
         template_name ='core/dashboard.html'
-        context = {'prof': prof, 'ref_link': ref_link ,'ref_hit':ref_hit,'length': length}
+        context = {'prof': prof, 'ref_link': ref_link ,'ref_hit':ref_hit}
         return render(request, template_name, context)
     except ObjectDoesNotExist:
         pass
