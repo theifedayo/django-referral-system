@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django_countries',
     'django_reflinks',
     'paypal.standard.ipn',
+    'user_visit',
 
 
     'core'
@@ -63,7 +64,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
     'django_reflinks.middleware.AnonymousReferralMiddleware',
-    'django_reflinks.middleware.ReferralLinkMiddleware'
+    'django_reflinks.middleware.ReferralLinkMiddleware',
+    'user_visit.middleware.UserVisitMiddleware',
 ]
 
 ROOT_URLCONF = 'lunnex.urls'

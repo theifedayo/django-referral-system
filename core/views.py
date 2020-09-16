@@ -27,6 +27,7 @@ from django.shortcuts import render, get_object_or_404
 
 from .forms import ProfileForm, ReferralLinkForm
 from .models import Profile, Wallet
+from user_visit.models import UserVisit
 
 
 
@@ -115,7 +116,11 @@ def dashboard(request):
     prof = Profile.objects.all()
     try:
         new_list = []
+        user_visit_list = []
         ref_link = ReferralLink.objects.get(user=request.user)#get(identifier=user.identifier)
+        user_visit = UserVisit.objects.get(user=request.user)
+        user_visit_list.append(user_visit)
+        user_visit = len(user_visit_list)*1000
         # wallet = Wallet.objects.get(user=request.user)
         print(ref_link)
         signup_fee = 300
@@ -128,10 +133,10 @@ def dashboard(request):
                 length =len(new_list)
                 referral_fee = length * 1000
                 signup_fee = 300
-                total = signup_fee + referral_fee
+                total = signup_fee + referral_fee + user_visit
                 template_name ='core/dashboard.html'
                 context = {'prof': prof, 'ref_link': ref_link ,'ref_hit':ref_hit,'length': length,
-                'referral_fee': referral_fee, 'signup_fee': signup_fee, 'total': total}
+                'referral_fee': referral_fee, 'signup_fee': signup_fee, 'total': total,'user_visit': user_visit}
                 return render(request, template_name, context)
             except UnboundLocalError:
                 print(a)
@@ -139,7 +144,9 @@ def dashboard(request):
         empty_list = []
         length = len(empty_list)
         total = 300
-        context = {'prof': prof, 'ref_link': ref_link ,'ref_hit':ref_hit,'signup_fee': signup_fee,'length':length,'total': total}
+        referral_fee = 0
+        context = {'prof': prof, 'ref_link': ref_link ,'ref_hit':ref_hit,'signup_fee': signup_fee,'user_visit':user_visit,'length':length,
+        'referral_fee':referral_fee,'total': total}
         return render(request, template_name, context)
     except ObjectDoesNotExist:
         pass
