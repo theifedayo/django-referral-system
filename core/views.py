@@ -118,34 +118,40 @@ def dashboard(request):
         new_list = []
         user_visit_list = []
         ref_link = ReferralLink.objects.get(user=request.user)#get(identifier=user.identifier)
-        user_visit = UserVisit.objects.get(user=request.user)
-        user_visit_list.append(user_visit)
-        user_visit = len(user_visit_list)*1000
-        # wallet = Wallet.objects.get(user=request.user)
-        print(ref_link)
+        user_visit = UserVisit.objects.filter(Q(user=request.user))
+        user_visit_fee = len(user_visit_list)*1000
+        for times in user_visit:
+            user_visit_list.append(times)
+        user_visit_fee = len(user_visit_list)*1000
+        li = []
+        part_one = str(ref_link)[1:4]
+        part_two = str(ref_link)[5:]
+        print(part_one, part_two)
         signup_fee = 300
-        print(signup_fee)
         ref_hit = ReferralHit.objects.filter(Q(next__icontains='/signup/')&Q(authenticated=False)&Q(referral_link=ref_link))
         for a in ref_hit:
             new_list.append(a)
-            
-            try:
-                length =len(new_list)
-                referral_fee = length * 1000
-                signup_fee = 300
-                total = signup_fee + referral_fee + user_visit
-                template_name ='core/dashboard.html'
-                context = {'prof': prof, 'ref_link': ref_link ,'ref_hit':ref_hit,'length': length,
-                'referral_fee': referral_fee, 'signup_fee': signup_fee, 'total': total,'user_visit': user_visit}
-                return render(request, template_name, context)
-            except UnboundLocalError:
-                print(a)
+
+        try:
+            length =len(new_list)
+            referral_fee = length * 1000
+            signup_fee = 300
+            total = signup_fee + referral_fee + user_visit_fee
+            template_name ='core/dashboard.html'
+            context = {'prof': prof, 'ref_link': ref_link ,'ref_hit':ref_hit,'length': length,
+            'referral_fee': referral_fee, 'signup_fee': signup_fee, 'total': total,'user_visit': user_visit_fee,
+            'part_one': part_one, 'part_two': part_two}
+            return render(request, template_name, context)
+        except UnboundLocalError:
+            print('unbound')
+
         template_name ='core/dashboard.html'
         empty_list = []
         length = len(empty_list)
         total = 300
         referral_fee = 0
-        context = {'prof': prof, 'ref_link': ref_link ,'ref_hit':ref_hit,'signup_fee': signup_fee,'user_visit':user_visit,'length':length,
+        context = {'prof': prof, 'ref_link': ref_link ,'ref_hit':ref_hit,'signup_fee': signup_fee,
+        'user_visit':user_visit,'length':length,'part_one': part_one, 'part_two': part_two,
         'referral_fee':referral_fee,'total': total}
         return render(request, template_name, context)
     except ObjectDoesNotExist:
