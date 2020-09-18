@@ -9,15 +9,13 @@ from .models import Profile
 from django_reflinks.models import ReferralLink
 
 
+class SignUpForm(UserCreationForm):
+    email = forms.CharField(max_length=254, help_text='Required. Inform a valid email address.')
+
 class ReferralLinkForm(forms.ModelForm):
 	class Meta:
 		model = ReferralLink
 		fields = ['identifier']
-
-# class ReferralForm(forms.ModelForm):
-#     class Meta:
-#         model = Referral
-#         fields = ['referral_link']
 
 
 class ProfileForm(forms.ModelForm):
