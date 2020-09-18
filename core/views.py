@@ -59,6 +59,7 @@ def get_referral(request, referral_link):
 def signup(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
+        #obj = Wallet.objects.create(user=request.user, signup_fee=400, referral_fee=0, facebook_share_fee=0)
 
         if form.is_valid():
 
@@ -114,32 +115,35 @@ def sellers_signup(request):
 @login_required
 def dashboard(request):
     prof = Profile.objects.all()
+    wallet = Wallet.objects.filter(Q(user=request.user))
     try:
-        new_list = []
-        user_visit_list = []
         ref_link = ReferralLink.objects.get(user=request.user)#get(identifier=user.identifier)
         user_visit = UserVisit.objects.filter(Q(user=request.user))
-        user_visit_fee = len(user_visit_list)*1000
-        for times in user_visit:
-            user_visit_list.append(times)
-        user_visit_fee = len(user_visit_list)*1000
-        li = []
+        user_visit_fee = user_visit.count()*1000
         part_one = str(ref_link)[1:4]
         part_two = str(ref_link)[5:]
-        print(part_one, part_two)
+       
         signup_fee = 300
         ref_hit = ReferralHit.objects.filter(Q(next__icontains='/signup/')&Q(authenticated=False)&Q(referral_link=ref_link))
-        for a in ref_hit:
-            new_list.append(a)
-
+        obj = Wallet.objects.create(user=request.user, signup_fee=400, referral_fee=0, facebook_share_fee=0)
         try:
-            length =len(new_list)
-            referral_fee = length * 1000
-            signup_fee = 300
-            total = signup_fee + referral_fee + user_visit_fee
+            length =ref_hit.count()
+            referral_fees = length * 1000
+            ref_fee = wallet.update(referral_fee=referral_fees)
+            for m in wallet:
+                a = m.referral_fee
+            signup_fees = 400
+            signup_fee = wallet.update(signup_fee=signup_fees)
+
+            for obj in wallet:
+                s = obj.signup_fee
+            daily_login = wallet.update(daily_login_fee = user_visit_fee)
+            for login in wallet:
+                d =login.daily_login_fee
+            total = s + a + user_visit_fee
             template_name ='core/dashboard.html'
             context = {'prof': prof, 'ref_link': ref_link ,'ref_hit':ref_hit,'length': length,
-            'referral_fee': referral_fee, 'signup_fee': signup_fee, 'total': total,'user_visit': user_visit_fee,
+            'referral_fee': referral_fees, 'signup_fee': s, 'total': total,'user_visit': d,
             'part_one': part_one, 'part_two': part_two}
             return render(request, template_name, context)
         except UnboundLocalError:
