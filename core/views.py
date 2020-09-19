@@ -151,6 +151,13 @@ def dashboard(request):
 
     prof = Profile.objects.all()
     wallet = Wallet.objects.filter(Q(user=request.user))
+    try:
+        obj_ref = ReferralLink.objects.get(user=request.user)  
+        print(obj_ref)    
+    except ReferralLink.DoesNotExist:
+        obj_ref = ReferralLink(user=request.user)
+        obj_ref = ReferralLink.objects.create(user=request.user, identifier=request.user.username)
+        print(obj_ref,'---')
 
     #Except users that dont have referral's link yet
     try:
