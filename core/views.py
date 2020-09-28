@@ -9,7 +9,6 @@ from django.views.decorators.csrf import csrf_exempt
 # from .forms import UserCreationForm, SignUpForm
 
 from django.contrib.auth.models import User
-import stripe
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -26,7 +25,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 
 from .forms import ProfileForm, ReferralLinkForm, SignUpForm
-from .models import Profile, Wallet
+from .models import Profile, Wallet, Transfer
 from user_visit.models import UserVisit
 
 
@@ -54,6 +53,8 @@ def get_referral(request, referral_link):
     except ObjectDoesNotExist:
         messages.info(request, "This referral_link does not exist")
         return redirect("/accounts/signup")
+
+
 
 
 def signup(request):
@@ -142,111 +143,79 @@ def sellers_signup(request):
         ref_form = ReferralForm()
     return render(request, 'core/sellers-signup.html', {'form':form, 'profile_form': profile_form,'ref_form': ref_form}) 
 
-
 @login_required
 def dashboard(request):
+    total = 300
+    user_visit = UserVisit.objects.filter(Q(user=request.user))
+    # try:
+    #     wew = Wallet.objects.get(user=request.user)
+    #     new_wew = wew.wallet_id
+    #     transfer = Transfer.objects.filter(Q(user= request.user)) or Transfer.objects.filter(Q(user2= new_wew))
+    #     print(transfer)
+    #     transfer_num = transfer.count()
+    # except
 
-    '''This function takes care of everything concerning the user,
-    wallet functions and profile'''
+    #get unique users, loop through user_visit and get the length of unique visit timestamp in the list
+    user_visit_list = []
+    for n in user_visit:
+        n_loop = str(n.timestamp)[:10]
+        user_visit_list.append(n_loop)
+        unique_visit = list(set(user_visit_list))
+    for n in unique_visit:
+        total += 200
+    unique_visit = len(unique_visit)
 
-    prof = Profile.objects.all()
-    wallet = Wallet.objects.filter(Q(user=request.user))
+    #CHECK IF USER HAS AN EXISTING WALLET
+    try:
+        obj_wallet = Wallet.objects.get(user=request.user) 
+        wallet = Wallet.objects.filter(Q(user=request.user))
+        wew = Wallet.objects.get(user=request.user)
+        new_wew = wew.wallet_id
+        transfer = Transfer.objects.filter(Q(user= request.user)) or Transfer.objects.filter(Q(user2= new_wew))
+        print(transfer)
+        transfer_num = transfer.count()
+        if transfer_num < 1:
+            amount_fee = wallet.update(wallet_fee=total)
+        else:
+            print('s')
+
+    except Wallet.DoesNotExist:
+        username = request.user.username
+        first = username[1]
+        second = username[-1]
+        rand_num = 'LW' + str(random.randint(1, 99999)) + str(first) + str(second)
+        obj_wallet = Wallet.objects.create(user=request.user,wallet_id=rand_num, wallet_fee='300')
+
+    #CHECK IF USER ALREADY HAVE AN EXISTING REFERRAL LINK
     try:
         obj_ref = ReferralLink.objects.get(user=request.user)  
-        print(obj_ref)    
+        part_one = str(obj_ref)[1:4]
+        part_two = str(obj_ref)[5:]
+
+        ref_hit = ReferralHit.objects.filter(Q(next__icontains='/signup/')&Q(authenticated=False)&Q(referral_link=obj_ref))
+        for s in ref_hit:
+            total += 1000
+
+        wallet = Wallet.objects.filter(Q(user=request.user)).order_by("-timestamp")
+        if transfer_num < 1:
+            amount_fee = wallet.update(wallet_fee=total)
+        else:
+            amount_fee = '2'
+            print(2)
+
+              
     except ReferralLink.DoesNotExist:
         obj_ref = ReferralLink(user=request.user)
         obj_ref = ReferralLink.objects.create(user=request.user, identifier=request.user.username)
-        print(obj_ref,'---')
+        part_one = str(obj_ref)[1:4]
+        part_two = str(obj_ref)[5:]
+        wallet = Wallet.objects.filter(Q(user=request.user))
 
-    #Except users that dont have referral's link yet
-    try:
-        ref_link = ReferralLink.objects.get(user=request.user)
-        user_visit = UserVisit.objects.filter(Q(user=request.user))
-
-        #get unique users, loop through user_visit and get the length of unique visit timestamp in the list
-        user_visit_list = []
-        for n in user_visit:
-            n_loop = str(n.timestamp)[:10]
-            user_visit_list.append(n_loop)
-            unique_visit = list(set(user_visit_list))
-        unique_visit = len(unique_visit)
-
-        #slice referral link
-        user_visit_fee = unique_visit*1000
-        part_one = str(ref_link)[1:4]
-        part_two = str(ref_link)[5:]
-       
-        signup_fee = 300
-        ref_hit = ReferralHit.objects.filter(Q(next__icontains='/signup/')&Q(authenticated=False)&Q(referral_link=ref_link))
-        try:
-            obj = Wallet(user=request.user)        
-        except Wallet.DoesNotExist:
-            obj = Wallet(user=request.user)
-            obj = Wallet.objects.create(user=request.user, signup_fee=400, daily_login_fee=0,referral_fee=0, facebook_share_fee=0)
-
-
-        try:
-            length =ref_hit.count()
-            referral_fees = length * 1000
-            ref_fee = wallet.update(referral_fee=referral_fees)
-            for m in wallet:
-                a = m.referral_fee
-            signup_fees = 400
-            signup_fee = wallet.update(signup_fee=signup_fees)
-
-            for obj in wallet:
-                s = obj.signup_fee
-            daily_login = wallet.update(daily_login_fee = user_visit_fee)
-            for login in wallet:
-                d =login.daily_login_fee
-            total = s + a + user_visit_fee
-            template_name ='core/dashboard.html'
-            context = {'prof': prof, 'ref_link': ref_link ,'ref_hit':ref_hit,'length': length,
-            'referral_fee': referral_fees, 'signup_fee': s, 'total': total,'user_visit': d,
-            'part_one': part_one, 'part_two': part_two}
-            return render(request, template_name, context)
-        except UnboundLocalError:
-            obj = Wallet.objects.create(user=request.user, signup_fee=400, referral_fee=0, daily_login_fee=0, facebook_share_fee=0)
-            for login in wallet:
-                d =login.daily_login_fee
-            print('unbound')
-            template_name ='core/dashboard.html'
-            signup_fee = 400
-            total = 300
-            referral_fee = 0
-            total = signup_fee + user_visit_fee + referral_fees
-            context = {'prof': prof, 'ref_link': ref_link ,'ref_hit':ref_hit,'signup_fee': signup_fee,
-            'user_visit':user_visit_fee,'length':length,'part_one': part_one, 'part_two': part_two,
-            'referral_fee':referral_fees,'total': total}
-            return render(request, template_name, context)
-        
-
-        template_name ='core/dashboard.html'
-        empty_list = []
-        length = len(empty_list)
-        total = 300
-        referral_fee = 0
-        context = {'prof': prof, 'ref_link': ref_link ,'ref_hit':ref_hit,'signup_fee': signup_fee,
-        'user_visit':d,'length':length,'part_one': part_one, 'part_two': part_two,
-        'referral_fee':referral_fee,'total': total}
-        return render(request, template_name, context)
-    except ObjectDoesNotExist:
-        print('object does not exist')
-    ref_hit = ReferralHit.objects.all()
+        amount_fee = wallet.update(wallet_fee=total)
     template_name ='core/dashboard.html'
-    context = {'prof': prof ,'ref_hit':ref_hit}
+    context = {'part_two': part_two, 'part_one': part_one,'obj_ref': obj_ref, 'obj_wallet': obj_wallet,
+        'amount_fee': amount_fee}
     return render(request, template_name, context)
-
-class ProfileDetailView(DetailView):
-    queryset = User.objects.filter(is_active=True)
-        
-    template_name = 'core/dashboard.html'
-    model = Profile
-
-    def get_object(self):
-        username = self.kwargs.get("username")
-        return get_object_or_404(User, username__iexact=username, is_active=True)
 
 
 
