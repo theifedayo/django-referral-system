@@ -26,25 +26,28 @@ def create_user_profile(sender, instance, created, **kwargs):
     def __str__(self):
         return self.user.username
 
+
 class Wallet(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    signup_fee = models.FloatField(default='400')
-    referral_fee = models.FloatField(default='0')
-    daily_login_fee = models.FloatField(default='0')
-    facebook_share_fee = models.FloatField(default='0') 
+    wallet_id = models.CharField(max_length=25, unique=True)
+    wallet_fee = models.FloatField(default='0') 
+    timestamp = models.DateTimeField(auto_now_add=True)
 
 
     def __str__(self):
         return self.user.username
         
 
+class Transfer(models.Model):
+    user = models.ForeignKey(User, default=1, null=True, on_delete=models.SET_NULL)
+    amount = models.CharField(max_length=25)
+    user2 = models.CharField(max_length=20)
 
-def userprofile_receiver(sender, instance, created, *args, **kwargs):
-    if created:
-        userprofile = UserProfile.objects.create(user=instance)
+    def __str__(self):
+        return self.user.username
 
 
-post_save.connect(userprofile_receiver, sender=settings.AUTH_USER_MODEL)
+
 
 
