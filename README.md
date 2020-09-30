@@ -3,7 +3,8 @@
 
 ### Prerequisites
 Find the requirements in requirements.txt file
-create a virtual environemnt and activate it
+create a virtual environemnt and activate it. There are alot
+of unnecessary packages in my requirements file. 
 
 ### Installing
 run pip install -r requirements.txt
